@@ -15,9 +15,10 @@ Assignment 2 - Team 2020_vision
 | Name | zID | Email |
 | :--- | :--- | :--- |
 | Alexander Catic | z3252894 | a.catic@student.unsw.edu.au |
-| Alexander *?* | z5146667 | z5146667@ad.unsw.edu.au |
+| Alexander Bunn | z5146667 | z5146667@ad.unsw.edu.au |
 | Daheng (Harry) Wang | z5234730 | 0w0@wdhwg001.me |
 | James Wang | z5228822 | jameswang1019@gmail.com |
+| Patrick Li | z5180847 | patrick.li@student.unsw.edu.au |
 
 ### Communication
 
