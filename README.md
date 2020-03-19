@@ -1,5 +1,6 @@
 # COMP9517 20T0 Project - group: 2020_vision
-
+Project page on course website:
+https://webcms3.cse.unsw.edu.au/COMP9517/20T1/resources/41481
 
 ## Overview
 TBD
