@@ -1,7 +1,6 @@
 import os
 import matplotlib.pyplot as plt
 
-FILE_DIRS = os.path.dirname(os.path.realpath('__file__'))
 SEQUENCES_BASE_PATH = '../../../sequence'
 
 sorted_sequences = sorted(os.listdir(
