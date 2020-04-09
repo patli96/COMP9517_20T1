@@ -2,7 +2,13 @@
 name = "pedestrian-monitor"
 version = "0.1.0"
 description = ""
-authors = ["Greendam Wang <0w0@wdhwg001.me>"]
+authors = [
+    "Alexander Catic <z3252894@unsw.edu.au>",
+    "Alexander Bunn <z5146667@unsw.edu.au>",
+    "Daheng (Harry) Wang <z5234730@unsw.edu.au>",
+    "James Wang <z5228822@unsw.edu.au>",
+    "Patrick Li <z5180847@unsw.edu.au>",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
