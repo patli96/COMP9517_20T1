@@ -4,11 +4,7 @@
 
 &#10003; | Task | Assigned
 :---: | :--- | :---
-&nbsp; | TBD | -
-&nbsp; | TBD | -
-&nbsp; | TBD | -
-&nbsp; | TBD | -
-&nbsp; | TBD | -
-&nbsp; | TBD | -
-&nbsp; | TBD | -
-&nbsp; | TBD | -
+&nbsp; | Framework Overhaul | Daheng (Harry) Wang
+&nbsp; | Detectors | -
+&nbsp; | Trackers | -
+&nbsp; | Clusterers | -

@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "pedestrian-monitor"
+version = "0.1.0"
+description = ""
+authors = ["Greendam Wang <0w0@wdhwg001.me>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+numpy = "^1.18.2"
+opencv-python = "^4.2.0"
+scikit-learn = "^0.22.2"
+scikit-image = "^0.16.2"
+notebook = "^6.0.3"
+jupyter_contrib_nbextensions = "^0.5.1"
+jupyter_nbextensions_configurator = "^0.4.1"
+matplotlib = "^3.2.1"
+scipy = "^1.4.1"
+Pillow = "^7.1.1"
+joblib = "^0.14.1"
+keras = "^2.3.1"
+tensorflow-gpu = "^2.1.0"
+natsort = "^7.0.1"
+pyqt5 = "^5.14.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
