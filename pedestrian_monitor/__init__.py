@@ -190,10 +190,10 @@ def main():
         overlay, overlay_mask = mark_selection(overlay, overlay_mask, selection_top_left, selection_bottom_right)
         overlay, overlay_mask = mark_pedestrians(overlay, overlay_mask, p_outside, p_inside, p_entering, p_leaving)
         overlay, overlay_mask = mark_tracks(overlay, overlay_mask, tracks)
-        overlay, overlay_mask = mark_groups(overlay, overlay_mask, groups, pedestrians)
-        image = merge_overlay(image, overlay, overlay_mask)
+        overlay, overlay_mask = mark_groups(overlay, overlay_mask, groups, group_records, pedestrians)
+        image_merged = merge_overlay(image, overlay, overlay_mask)
 
-        cv.imshow(window_name, image)
+        cv.imshow(window_name, image_merged)
         cv.waitKey(1)
         frame_end_time = time.perf_counter()
         if frame_end_time - frame_start_time > 0:

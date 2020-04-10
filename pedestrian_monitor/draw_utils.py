@@ -45,6 +45,7 @@ def mark_groups(
         overlay: np.ndarray,
         mask: np.ndarray,
         groups: Dict[int, List[int]],
+        groups_record: List[Dict[int, List[int]]],
         pedestrians: Dict[int, Tuple[int, int, int, int]],
 ):
     return overlay, mask
