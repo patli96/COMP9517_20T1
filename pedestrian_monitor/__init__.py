@@ -147,8 +147,8 @@ def main():
             image=image,
             frame_delta=frame_delta,
             image_records=image_records,
-            detection_records=detection_records,
-            detection_frame_deltas=detection_frame_deltas
+            previous_detection_records=detection_records,
+            previous_detection_frame_deltas=detection_frame_deltas
         )
         detection_records, detection_frame_deltas = store_record(
             copy.deepcopy(detections), frame_delta, detection_records, detection_frame_deltas
