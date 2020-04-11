@@ -10,8 +10,8 @@ def compute(  # This function will be called with named parameters, so please do
         image: np.ndarray,  # The image, it is 3-channel BGR uint8 numpy array
         image_records: List[np.ndarray],  # List[ images ], previously displayed images
         frame_delta: int,  # current_frame_index - last_computed_frame_index, will be >= 1
-        pedestrian_records: List[Dict[int, Tuple[int, int, int, int]]],  # List[ pedestrians ], previously computed
-        pedestrian_frame_deltas: List[int],  # List[ pedestrian_frame_delta ], for previously computed pedestrians
+        previous_pedestrian_records: List[Dict[int, Tuple[int, int, int, int]]],  # List[ pedestrians ], previously computed
+        previous_pedestrian_frame_deltas: List[int],  # List[ pedestrian_frame_delta ], for previously computed pedestrians
         previous_tracks: Dict[int, List[Tuple[int, int]]],  # Dict{ pedestrian_id: [(y, x), ...], ... }
         # The new tracks should be modified based on the previous_tracks
         # Both tracks and pedestrians shared the same frame_delta_records as they both came from trackers

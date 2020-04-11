@@ -14,8 +14,8 @@ def compute(  # This function will be called with named parameters, so please do
         image: np.ndarray,  # The image, it is 3-channel BGR uint8 numpy array
         image_records: List[np.ndarray],  # List[ images ], previously displayed images
         frame_delta: int,  # current_frame_index - last_computed_frame_index, will be >= 1
-        group_records: List[Dict[int, List[int]]],  # List[ groups ], previously computed groups
-        group_frame_deltas: List[int],  # List[ frame_delta ], for previously computed groups
+        previous_group_records: List[Dict[int, List[int]]],  # List[ groups ], previously computed groups
+        previous_group_frame_deltas: List[int],  # List[ frame_delta ], for previously computed groups
 ) -> Dict[int, List[int]]:
     # groups is a dict
     # its indexes are group ids, which should be stable between frames

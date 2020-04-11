@@ -161,8 +161,8 @@ def main():
             image=image,
             image_records=image_records,
             frame_delta=frame_delta,
-            pedestrian_records=pedestrian_records,
-            pedestrian_frame_deltas=pedestrian_frame_deltas,
+            previous_pedestrian_records=pedestrian_records,
+            previous_pedestrian_frame_deltas=pedestrian_frame_deltas,
             previous_tracks=tracks,
         )
         pedestrian_records, pedestrian_frame_deltas = store_record(
@@ -177,8 +177,8 @@ def main():
             image=image,
             image_records=image_records,
             frame_delta=frame_delta,
-            group_records=group_records,
-            group_frame_deltas=group_frame_deltas,
+            previous_group_records=group_records,
+            previous_group_frame_deltas=group_frame_deltas,
         )
         group_records, group_frame_deltas = store_record(
             copy.deepcopy(groups), frame_delta, group_records, group_frame_deltas
