@@ -1,0 +1,14 @@
+Pillow<8.0.0,>=7.1.1
+joblib<0.15.0,>=0.14.1
+jupyter_contrib_nbextensions<0.6.0,>=0.5.1
+jupyter_nbextensions_configurator<0.5.0,>=0.4.1
+keras<3.0.0,>=2.3.1
+matplotlib<4.0.0,>=3.2.1
+natsort<8.0.0,>=7.0.1
+notebook<7.0.0,>=6.0.3
+numpy<2.0.0,>=1.18.2
+opencv-python<5.0.0,>=4.2.0
+pyqt5<6.0.0,>=5.14.2
+scikit-image<0.17.0,>=0.16.2
+scikit-learn<0.23.0,>=0.22.2
+scipy<2.0.0,>=1.4.1
