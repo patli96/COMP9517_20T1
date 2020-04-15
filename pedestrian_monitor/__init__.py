@@ -298,6 +298,9 @@ def main():
                 paused=paused or image_index <= 0,
             )
 
+        # Uncomment the line below to visualise the features
+        # image = features
+
         image_merged = merge_overlay(image, overlay, overlay_mask, overlay_mode)
 
         cv.imshow(window_name, image_merged)
