@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Any
 
 import numpy as np
 
@@ -12,11 +12,13 @@ def compute(  # This function will be called with named parameters, so please do
         # Tracks of those who disappeared or moved out of the image will be removed, and they're useless
         # Both tracks and pedestrians shared the same frame_delta_records as they both came from trackers
         image: np.ndarray,  # The image, it is 3-channel BGR uint8 numpy array
+        image_index: int,  # The current index of frame, started at 0
         image_records: List[np.ndarray],  # List[ images ], previously displayed images
         frame_delta: int,  # current_frame_index - last_computed_frame_index, will be >= 1
         previous_group_records: List[Dict[int, List[int]]],  # List[ groups ], previously computed groups
         previous_group_frame_deltas: List[int],  # List[ frame_delta ], for previously computed groups
-) -> Dict[int, List[int]]:
+        storage: Dict[str, Any],  # It will be handed over to the next detector, please mutate this object directly
+) -> Tuple[Dict[int, List[int]], Dict[int, List[int]], Dict[int, List[int]]]:
     # groups is a dict
     # its indexes are group ids, which should be stable between frames
     # the group id does not need to start at 0, but it needs to be unique and stable
@@ -24,8 +26,26 @@ def compute(  # This function will be called with named parameters, so please do
     # its values are lists that contain >=2 unique pedestrian id
     # Example: [1] is not a group and should not be returned
     groups = {
-        0: [0, 1],
-        1: [2, 6, 4],
+        0: [0],
+        1: [2, 4],
         2: [5, 3],
     }
-    return groups
+    # entering_members is a dict
+    # it has the same structure as groups
+    # the pedestrian_id inside will be marked as entering the group
+    # due to the lazy removal, the pedestrian_ids inside may appear in groups or/and leaving_members
+    entering_members = {
+        0: [1],
+        1: [7],
+        2: [9],
+    }
+    # leaving_members is a dict
+    # it has the same structure as groups
+    # the pedestrian_id inside will be marked as leaving the group
+    # due to the lazy removal, the pedestrian_ids inside may appear in groups or/and entering_members
+    leaving_members = {
+        0: [1],
+        1: [6],
+        2: [8, 3],
+    }
+    return groups, entering_members, leaving_members

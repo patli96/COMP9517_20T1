@@ -47,6 +47,7 @@ class ImageFileIterator:
         self.listen = listen
         self.image_paths = get_image_paths(path_str)
         self.index = 0
+        self.incremental_index = -1
 
     def __iter__(self):
         return self
@@ -65,4 +66,5 @@ class ImageFileIterator:
                 raise StopIteration
         image = cv.imread(self.image_paths[self.index])
         self.index += 1
-        return image, self.image_paths[self.index - 1]
+        self.incremental_index += 1
+        return image, self.image_paths[self.index - 1], self.incremental_index

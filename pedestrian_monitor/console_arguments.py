@@ -1,5 +1,17 @@
 import argparse
 from pathlib import Path
+from os.path import basename, isfile, isdir, splitext
+import glob
+
+
+def _list_modules(folder_name):
+    modules = glob.glob(str(Path(__file__).resolve().parent / folder_name / '*'))
+    return list(
+        splitext(basename(f))[0]
+        for f in modules
+        if (isfile(f) and splitext(f)[1] == '.py' and basename(f) != '__init__.py')
+        or (isdir(f) and isfile(Path(f) / '__init__.py'))
+    )
 
 
 def get_args():
@@ -62,21 +74,59 @@ def get_args():
         action='store_true',
     )
     parser.add_argument(
-        '--no-detecting',
-        help='Disable pedestrian detecting (and all other processes)',
-        dest='no_detecting',
+        '-pp',
+        '--preprocessor',
+        help='Use a specific preprocessor',
+        dest='preprocessor',
+        choices=_list_modules('preprocessors'),
+        default='sample_preprocessor',
+    )
+    parser.add_argument(
+        '--no-preprocessor',
+        help='Disable image preprocessing',
+        dest='no_preprocessor',
         action='store_true',
     )
     parser.add_argument(
-        '--no-tracking',
-        help='Disable path tracking',
-        dest='no_tracking',
+        '-dt',
+        '--detector',
+        help='Use a specific detector',
+        dest='detector',
+        choices=_list_modules('detectors'),
+        default='sample_detector',
+    )
+    parser.add_argument(
+        '--no-detector',
+        help='Disable pedestrian detecting',
+        dest='no_detector',
         action='store_true',
     )
     parser.add_argument(
-        '--no-clustering',
+        '-tk',
+        '--tracker',
+        help='Use a specific tracker',
+        dest='tracker',
+        choices=_list_modules('trackers'),
+        default='sample_tracker',
+    )
+    parser.add_argument(
+        '--no-tracker',
+        help='Disable pedestrian re-id and path tracking',
+        dest='no_tracker',
+        action='store_true',
+    )
+    parser.add_argument(
+        '-cl',
+        '--clusterer',
+        help='Use a specific clusterer',
+        dest='clusterer',
+        choices=_list_modules('clusterers'),
+        default='sample_clusterer',
+    )
+    parser.add_argument(
+        '--no-clusterer',
         help='Disable pedestrian clustering (group detection)',
-        dest='no_clustering',
+        dest='no_clusterer',
         action='store_true',
     )
     # if len(sys.argv) == 1:
