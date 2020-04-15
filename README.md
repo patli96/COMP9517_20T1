@@ -25,6 +25,10 @@ Assignment 2 - Team 2020_vision
 
 Slack: https://2020visionco.slack.com/
 
+### Preparation
+* Download the YOLOv3 weight here: https://pjreddie.com/media/files/yolov3.weights
+and place the file under /pedestrian_monitor/detectors/
+
 ### Running code
 
 1. Set up the environment.

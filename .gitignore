@@ -89,3 +89,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+pedestrian_monitor/detectors/yolov3.weights
