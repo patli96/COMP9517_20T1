@@ -176,7 +176,10 @@ def mark_groups(
         new_group_prefix_empty = ' ' * len(new_group_prefix)
         dismissed_group_prefix = 'Dismissed Group IDs:'
         dismissed_group_prefix_empty = ' ' * len(dismissed_group_prefix)
-        number_length = len(str(max(999999, max(group_ids.union(prev_group_ids)))))
+        if len(group_ids.union(prev_group_ids)) > 0:
+            number_length = len(str(max(999999, max(group_ids.union(prev_group_ids)))))
+        else:
+            number_length = 6
         max_numbers_per_line = (80 - max(len(dismissed_group_prefix), len(new_group_prefix))) \
             // (number_length + 2)
         if len(new_group_ids) > 0:
