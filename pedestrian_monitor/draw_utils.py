@@ -109,25 +109,26 @@ def mark_tracks(
         tracks: Dict[int, List[Tuple[int, int]]],
 ):
     for points in tracks.values():
-        points = np.fliplr(points).astype(np.int32).reshape((-1, 1, 2))
-        overlay = cv.polylines(
-            overlay,
-            points,
-            isClosed=False,
-            color=color_track,
-            thickness=1,
-            lineType=cv.LINE_8,
-            shift=0
-        )
-        mask = cv.polylines(
-            mask,
-            points,
-            isClosed=False,
-            color=255,
-            thickness=1,
-            lineType=cv.LINE_AA,
-            shift=0
-        )
+        if len(points) > 1:
+            for point_i in range(1, len(points)):
+                overlay = cv.line(
+                    overlay,
+                    pt1=(points[point_i - 1][1], points[point_i - 1][0]),
+                    pt2=(points[point_i][1], points[point_i][0]),
+                    color=color_track,
+                    thickness=1,
+                    lineType=cv.LINE_AA,
+                    shift=0,
+                )
+                mask = cv.line(
+                    mask,
+                    pt1=(points[point_i - 1][1], points[point_i - 1][0]),
+                    pt2=(points[point_i][1], points[point_i][0]),
+                    color=255,
+                    thickness=1,
+                    lineType=cv.LINE_AA,
+                    shift=0,
+                )
     return overlay, mask
 
 
