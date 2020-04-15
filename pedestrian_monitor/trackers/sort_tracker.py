@@ -2,7 +2,7 @@ from typing import Dict, Tuple, List, Any
 
 import numpy as np
 
-import tracker_v2
+from mot_tracker.sort import *
 
 def compute(  # This function will be called with named parameters, so please do not change the parameter name
         detections: List[Tuple[int, int, int, int]],  # List[ (y1, x1, y2, x2), ... ]
