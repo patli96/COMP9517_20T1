@@ -10,7 +10,7 @@ import numpy as np
 from PyQt5 import QtCore
 
 from .console_arguments import get_args
-from .draw_utils import get_status_text, apply_selection
+from .draw_utils import get_status_text, apply_selection, loading
 from .draw_utils import resize_image, mark_selection, mark_pedestrians, mark_tracks, mark_groups, merge_overlay
 from .file_handlers import get_image_paths, ImageFileIterator
 from .mouse_handlers import mouse_callback_factory
@@ -179,6 +179,8 @@ def main():
         # TODO: Multi-processing non-blocking player with frame dropping
         # TODO: init pools and managers
         pass
+    cv.imshow(window_name, loading())
+    cv.waitKey(1)
     while cv.getWindowProperty(window_name, cv.WND_PROP_VISIBLE) > 0:
         frame_start_time = time.perf_counter()
         if not paused:
@@ -284,7 +286,7 @@ def main():
             p_leaving = {}
         overlay, overlay_mask = mark_selection(overlay, overlay_mask, selection_top_left, selection_bottom_right)
         overlay, overlay_mask = mark_pedestrians(overlay, overlay_mask, p_outside, p_inside, p_entering, p_leaving)
-        overlay, overlay_mask = mark_tracks(overlay, overlay_mask, tracks)
+        overlay, overlay_mask = mark_tracks(overlay, overlay_mask, tracks, pedestrians)
 
         if overlay_mode == 3:
             overlay, overlay_mask = mark_groups(

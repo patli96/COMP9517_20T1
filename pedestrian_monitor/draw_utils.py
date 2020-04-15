@@ -66,6 +66,22 @@ def _draw_box(text, box, color, overlay, mask):
     return overlay, mask
 
 
+def loading():
+    loading_image = np.zeros((64, 200), np.uint8)
+    loading_image = cv.putText(
+        loading_image,
+        'Loading, please wait...',
+        (5, loading_image.shape[0] - 5 - 21),
+        fontFace=cv.FONT_HERSHEY_PLAIN,
+        fontScale=1.0,
+        color=255,
+        thickness=1,
+        lineType=cv.LINE_AA,
+        bottomLeftOrigin=False,
+    )
+    return loading_image
+
+
 def mark_selection(
         overlay: np.ndarray,
         mask: np.ndarray,
@@ -107,8 +123,11 @@ def mark_tracks(
         overlay: np.ndarray,
         mask: np.ndarray,
         tracks: Dict[int, List[Tuple[int, int]]],
+        pedestrians: Dict[int, Tuple[int, int, int, int]],
 ):
-    for points in tracks.values():
+    for (p_id, points) in tracks.items():
+        if pedestrians.get(p_id, None) is None:
+            continue
         if len(points) > 1:
             for point_i in range(1, len(points)):
                 overlay = cv.line(
