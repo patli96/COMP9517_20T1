@@ -25,7 +25,6 @@ def compute(  # This function will be called with named parameters, so please do
         imgs_modes = np.apply_along_axis(lambda x: np.bincount(x).argmax(), axis=0, arr=imgs_array)
         storage['imgs_modes'] = imgs_modes
 
-
     sub = np.subtract(image, storage['imgs_modes'])
     sub = (sub - sub.min()) / (sub.max() - sub.min())
     return sub.reshape(image.shape)
