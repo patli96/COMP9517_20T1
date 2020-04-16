@@ -108,14 +108,35 @@ def mark_pedestrians(
         p_entering: Dict[int, Tuple[int, int, int, int]],
         p_leaving: Dict[int, Tuple[int, int, int, int]],
 ):
-    for (p_id, box) in p_outside.items():
-        overlay, mask = _draw_box('P_' + str(p_id), box, color_outside, overlay, mask)
-    for (p_id, box) in p_inside.items():
-        overlay, mask = _draw_box('P_' + str(p_id), box, color_inside, overlay, mask)
-    for (p_id, box) in p_entering.items():
-        overlay, mask = _draw_box('P_' + str(p_id), box, color_entering, overlay, mask)
-    for (p_id, box) in p_leaving.items():
-        overlay, mask = _draw_box('P_' + str(p_id), box, color_leaving, overlay, mask)
+    def draw_batch(pedestrians, color):
+        nonlocal overlay, mask
+        boxes = []
+        for (p_id, box) in pedestrians.items():
+            overlay, mask = _draw_text('P_' + str(p_id), (box[0], box[1]), color_outside, overlay, mask)
+            boxes.append(((box[1], box[0]), (box[3], box[0]), (box[3], box[2]), (box[1], box[2])))
+        boxes = np.array(boxes)
+        overlay = cv.polylines(
+            overlay,
+            boxes,
+            True,
+            color=color,
+            thickness=1,
+            lineType=cv.LINE_AA,
+            shift=0,
+        )
+        mask = cv.polylines(
+            mask,
+            boxes,
+            True,
+            color=255,
+            thickness=1,
+            lineType=cv.LINE_AA,
+            shift=0,
+        )
+    draw_batch(p_outside, color_outside)
+    draw_batch(p_entering, color_entering)
+    draw_batch(p_leaving, color_leaving)
+    draw_batch(p_inside, color_inside)
     return overlay, mask
 
 
@@ -129,25 +150,25 @@ def mark_tracks(
         if pedestrians.get(p_id, None) is None:
             continue
         if len(points) > 1:
-            for point_i in range(1, len(points)):
-                overlay = cv.line(
-                    overlay,
-                    pt1=(points[point_i - 1][1], points[point_i - 1][0]),
-                    pt2=(points[point_i][1], points[point_i][0]),
-                    color=color_track,
-                    thickness=1,
-                    lineType=cv.LINE_AA,
-                    shift=0,
-                )
-                mask = cv.line(
-                    mask,
-                    pt1=(points[point_i - 1][1], points[point_i - 1][0]),
-                    pt2=(points[point_i][1], points[point_i][0]),
-                    color=255,
-                    thickness=1,
-                    lineType=cv.LINE_AA,
-                    shift=0,
-                )
+            points = np.fliplr(np.array(points, dtype=np.int32))
+            overlay = cv.polylines(
+                overlay,
+                [points],
+                False,
+                color=color_track,
+                thickness=1,
+                lineType=cv.LINE_AA,
+                shift=0,
+            )
+            mask = cv.polylines(
+                mask,
+                [points],
+                False,
+                color=255,
+                thickness=1,
+                lineType=cv.LINE_AA,
+                shift=0,
+            )
     return overlay, mask
 
 
@@ -259,7 +280,6 @@ def get_status_text(
 
 
 def append_image_status_text(image:np.ndarray, status_text:str):
-    image_appended = image.copy()
     status_image_shape = list(image.shape)
     status_image_shape[0] = 20
     status_image_shape = tuple(status_image_shape)
@@ -275,7 +295,7 @@ def append_image_status_text(image:np.ndarray, status_text:str):
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )
-    image_appended = np.concatenate((image_appended, status_image), axis=0)
+    image_appended = np.concatenate((image, status_image), axis=0)
     return image_appended
 
 
@@ -294,30 +314,30 @@ def merge_overlay(image: np.ndarray, overlay_image: np.ndarray, overlay_mask: np
 
     if overlay_mode > 0:
         overlay_mask = cv.cvtColor(overlay_mask, cv.COLOR_GRAY2BGR)
-        overlay_mask = overlay_mask.astype(float) / 255
-        overlay_image = overlay_image.astype(float)
-        image_combined = image_combined.astype(float)
+        overlay_mask = overlay_mask.astype(np.float32) / 255
+        overlay_image = overlay_image.astype(np.float32)
+        image_combined = image_combined.astype(np.float32)
         overlay_image *= overlay_mask
         image_combined *= 1 - overlay_mask
         image_combined += overlay_image
-        image_combined = np.rint(image_combined).astype(np.uint8)
+        image_combined = image_combined.astype(np.uint8)
 
     if overlay_mode == 0:
         image_combined = append_image_status_text(
             image_combined,
             '[OverlayMode 0] All Overlays are hidden.',
         )
-    if overlay_mode == 1:
+    elif overlay_mode == 1:
         image_combined = append_image_status_text(
             image_combined,
             '[OverlayMode 1] Show overlays for Task 1.',
         )
-    if overlay_mode == 2:
+    elif overlay_mode == 2:
         image_combined = append_image_status_text(
             image_combined,
             '[OverlayMode 2] Show overlays for Task 2. (Unfinished)',
         )
-    if overlay_mode == 3:
+    elif overlay_mode == 3:
         image_combined = append_image_status_text(
             image_combined,
             '[OverlayMode 3] Show overlays for Task 3.',
