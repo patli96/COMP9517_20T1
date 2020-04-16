@@ -14,6 +14,8 @@ def _load_gt():
     if gt_file_path.is_file():
         with open(gt_file_path, newline='') as csvfile:
             gt_reader = csv.reader(csvfile, delimiter=',')
+            current_frame_tracks = {}
+            current_frame_index = -1
             for row in gt_reader:
                 row = dict(zip(gt_columns, row))
                 row['frame'] = int(row['frame']) - 1
@@ -28,15 +30,26 @@ def _load_gt():
                 row['x'] = float(row['x'])
                 row['y'] = float(row['y'])
                 row['z'] = float(row['z'])
+
+                # Store pedestrians data
                 gt_pedestrians.setdefault(row['frame'], {})
                 gt_pedestrians[row['frame']][row['p_id']] = (row['top'], row['left'], row['bottom'], row['right'])
-                gt_tracks.setdefault(row['frame'], copy.deepcopy(gt_tracks.get(row['frame'] - 1, {})))
+
+                # Store tracks data
+                if row['frame'] != current_frame_index:
+                    # Use a storage to avoid unnecessary copies
+                    current_frame_tracks = copy.deepcopy(current_frame_tracks)
+                    gt_tracks.setdefault(row['frame'], current_frame_tracks)
+                    current_frame_index = row['frame']
                 gt_tracks[row['frame']].setdefault(row['p_id'], [])
+                # Please be aware that the latest position should be at [0]
                 gt_tracks[row['frame']][row['p_id']].insert(0,
                     (round(row['top'] + 0.5 * row['height']), round(row['left'] + 0.5 * row['width']))
                 )
                 # Limit the maximum length of tracks
                 gt_tracks[row['frame']][row['p_id']] = gt_tracks[row['frame']][row['p_id']][:300]
+
+    # Remove invisible pedestrian's tracks (e.g. outside the frame image)
     gt_tracks_copy = copy.deepcopy(gt_tracks)
     for image_index in gt_tracks.keys():
         for p_id in gt_tracks[image_index].keys():
