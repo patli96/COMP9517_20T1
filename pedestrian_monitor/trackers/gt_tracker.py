@@ -32,11 +32,11 @@ def _load_gt():
                 gt_pedestrians[row['frame']][row['p_id']] = (row['top'], row['left'], row['bottom'], row['right'])
                 gt_tracks.setdefault(row['frame'], copy.deepcopy(gt_tracks.get(row['frame'] - 1, {})))
                 gt_tracks[row['frame']].setdefault(row['p_id'], [])
-                gt_tracks[row['frame']][row['p_id']].append(
+                gt_tracks[row['frame']][row['p_id']].insert(0,
                     (round(row['top'] + 0.5 * row['height']), round(row['left'] + 0.5 * row['width']))
                 )
                 # Limit the maximum length of tracks
-                gt_tracks[row['frame']][row['p_id']] = gt_tracks[row['frame']][row['p_id']][-300:]
+                gt_tracks[row['frame']][row['p_id']] = gt_tracks[row['frame']][row['p_id']][:300]
     gt_tracks_copy = copy.deepcopy(gt_tracks)
     for image_index in gt_tracks.keys():
         for p_id in gt_tracks[image_index].keys():
