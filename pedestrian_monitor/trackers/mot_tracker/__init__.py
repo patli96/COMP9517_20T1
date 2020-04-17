@@ -24,7 +24,6 @@ def compute(  # This function will be called with named parameters, so please do
         storage['tracked_id_list'] = [] # List[ List[frame_index, id1, id2, ...], ... ]
         global mot_tracker
         mot_tracker = Sort()
-        print('-------------\nFIRST RUN\n--------------')
     else:
         storage['pedestrian_frame_indexes'].append(image_index)
 
