@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple
+import math
 
 import numpy as np
 import cv2 as cv
@@ -7,8 +8,8 @@ import cv2 as cv
 # Selection
 color_selection = (255, 255, 255)  # White
 color_outside = (90, 240, 140)  # Green
-color_inside = (120, 120, 255)  # Red
-color_entering = (90, 210, 240)  # Yellow
+color_inside = (130, 105, 255)  # Red
+color_entering = (90, 220, 240)  # Yellow
 color_leaving = (70, 160, 255)  # Orange
 color_group = (255, 170, 150)  # Blue
 color_track = (255, 150, 230)  # Purple
@@ -87,11 +88,25 @@ def mark_selection(
         mask: np.ndarray,
         top_left: Tuple[int, int],
         bottom_right: Tuple[int, int],
+        overlay_mode:int,
+        total_inside: int,
+        total_leaving: int,
+        total_entering: int,
 ):
     if top_left == bottom_right:
         return overlay, mask
+    if overlay_mode == 2:
+        title = 'Selection (inside: '\
+                + str(total_inside)\
+                + ', leaving: '\
+                + str(total_leaving)\
+                + ', entering: '\
+                + str(total_entering)\
+                + ')'
+    else:
+        title = 'Selection'
     overlay, mask = _draw_box(
-        'Selection',
+        title,
         (top_left[0], top_left[1], bottom_right[0], bottom_right[1]),
         color_selection,
         overlay,
@@ -112,7 +127,7 @@ def mark_pedestrians(
         nonlocal overlay, mask
         boxes = []
         for (p_id, box) in pedestrians.items():
-            overlay, mask = _draw_text('P_' + str(p_id), (box[0], box[1]), color_outside, overlay, mask)
+            overlay, mask = _draw_text('P_' + str(p_id), (box[0], box[1]), color, overlay, mask)
             boxes.append(((box[1], box[0]), (box[3], box[0]), (box[3], box[2]), (box[1], box[2])))
         boxes = np.array(boxes)
         overlay = cv.polylines(
@@ -309,7 +324,7 @@ def resize_image(
     return image
 
 
-def merge_overlay(image: np.ndarray, overlay_image: np.ndarray, overlay_mask: np.ndarray, overlay_mode: int):
+def merge_overlay(image: np.ndarray, image_index: int, overlay_image: np.ndarray, overlay_mask: np.ndarray, overlay_mode: int):
     image_combined = image.copy()
 
     if overlay_mode > 0:
@@ -325,34 +340,199 @@ def merge_overlay(image: np.ndarray, overlay_image: np.ndarray, overlay_mask: np
     if overlay_mode == 0:
         image_combined = append_image_status_text(
             image_combined,
-            '[OverlayMode 0] All Overlays are hidden.',
+            '[Frame: ' + str(image_index) + '][OverlayMode 0] All overlays are hidden.',
         )
     elif overlay_mode == 1:
         image_combined = append_image_status_text(
             image_combined,
-            '[OverlayMode 1] Show overlays for Task 1.',
+            '[Frame: ' + str(image_index) + '][OverlayMode 1] Show overlays for Task 1.',
         )
     elif overlay_mode == 2:
         image_combined = append_image_status_text(
             image_combined,
-            '[OverlayMode 2] Show overlays for Task 2. (Unfinished)',
+            '[Frame: ' + str(image_index) + '][OverlayMode 2] Show overlays for Task 2.',
         )
     elif overlay_mode == 3:
         image_combined = append_image_status_text(
             image_combined,
-            '[OverlayMode 3] Show overlays for Task 3.',
+            '[Frame: ' + str(image_index) + '][OverlayMode 3] Show overlays for Task 3.',
         )
     return image_combined
 
 
+T2_MAX_BOUNDARY = 45
+T2_MIN_BOUNDARY = 20
+T2_BOUNDARY_RATE = 0.15
+T2_MAX_POINTS_CONSIDERED = 10
+T2_POINT_WEIGHT_REDUCTION_RATE = 0.7
+T2_TELEPORT_MIN_DISTANCE = 20
+
+
 def apply_selection(
         pedestrians: Dict[int, Tuple[int, int, int, int]],
+        pedestrian_records: List[Dict[int, Tuple[int, int, int, int]]],
+        pedestrian_frame_deltas: List[int],
         tracks: Dict[int, List[Tuple[int, int]]],
         top_left: Tuple[int, int],
         bottom_right: Tuple[int, int],
+        image_height: int,
+        image_width: int,
 ):
-    p_outside = pedestrians
-    p_inside = pedestrians
-    p_entering = pedestrians
-    p_leaving = pedestrians
+    if top_left[0] == bottom_right[0] or top_left[1] == bottom_right[1]:
+        # We don't handle any zero-size selections
+        return pedestrians, dict(), dict(), dict()
+
+    # Get base properties
+    top, left = top_left
+    bottom, right = bottom_right
+    height = bottom - top
+    width = right - left
+
+    # Boundaries
+    # The outer boundary is height_or_width * BOUNDARY_RATE, but limited in [MIN_BOUNDARY, MAX_BOUNDARY]
+    y_outer = max(T2_MIN_BOUNDARY, min(T2_MAX_BOUNDARY, round(height * T2_BOUNDARY_RATE)))
+    x_outer = max(T2_MIN_BOUNDARY, min(T2_MAX_BOUNDARY, round(width * T2_BOUNDARY_RATE)))
+    # The inner should be no more than
+    y_inner = min(int((bottom - top) / 2), y_outer)
+    x_inner = min(int((right - left) / 2), x_outer)
+
+    # Inner & Outer bounding box
+    top_inner = min(bottom, top + y_inner)
+    top_outer = max(0, top - y_outer)
+    bottom_inner = max(top, bottom - y_inner)
+    bottom_outer = min(image_height, bottom + y_outer)
+    left_inner = min(right, left + x_inner)
+    left_outer = max(0, left - x_outer)
+    right_inner = max(left, right - x_inner)
+    right_outer = min(image_width, right + x_outer)
+
+    # Init
+    p_outside = {}
+    p_inside = {}
+    p_entering = {}
+    p_leaving = {}
+
+    for (p_id, p_box) in pedestrians.items():
+        p_points = tracks.get(p_id, None)
+        if p_points is not None and len(p_points) > 0:
+            p_center = p_points[0]
+            p_points = []
+        else:
+            p_center = None
+        if p_center is None:
+            p_center = (round((p_box[0] + p_box[2]) / 2), round((p_box[1] + p_box[3]) / 2))
+
+        # Check inside inner / outside outer / on boundary
+        if bottom_inner > p_center[0] > top_inner and right_inner > p_center[1] > left_inner:
+            p_inside[p_id] = p_box
+            continue
+        elif p_center[0] > bottom_outer\
+                or p_center[0] < top_outer\
+                or p_center[1] > right_outer\
+                or p_center[1] < left_outer:
+            p_outside[p_id] = p_box
+            continue
+
+        # Check if is inside
+        is_inside = False
+        if bottom >= p_center[0] >= top and right >= p_center[1] >= left:
+            is_inside = True
+
+        # Get the mean walking direction
+        total_weights = 1.0
+        point_weight = 1.0
+        direction = (0.0, 0.0)
+        for i in range(1, T2_MAX_POINTS_CONSIDERED + 1):
+            if len(p_points) > i:
+                p_ref_center = p_points[i]
+            elif len(pedestrian_records) > i:
+                p_ref_box = pedestrian_records[i].get(p_id, None)
+                if p_ref_box is None:
+                    break
+                p_ref_center = (round((p_ref_box[0] + p_ref_box[2]) / 2), round((p_ref_box[1] + p_ref_box[3]) / 2))
+            else:
+                break
+            if len(pedestrian_frame_deltas) > i:
+                p_ref_frame_delta = pedestrian_frame_deltas[i]
+            else:
+                p_ref_frame_delta = 1
+            p_vec = (float(p_center[0] - p_ref_center[0]), float(p_center[1] - p_ref_center[1]))
+            if math.hypot(p_vec[0], p_vec[1]) > T2_TELEPORT_MIN_DISTANCE * p_ref_frame_delta:
+                # If the pedestrian "teleport"
+                break
+            if p_vec != (0.0, 0.0):
+                point_weight *= T2_POINT_WEIGHT_REDUCTION_RATE
+                total_weights += point_weight
+                norm = np.linalg.norm(p_vec, ord=2)
+                p_vec = (p_vec[0] / norm * point_weight, p_vec[1] / norm * point_weight)
+                direction = (direction[0] + p_vec[0], direction[1] + p_vec[1])
+        direction = (direction[0] / total_weights, direction[1] / total_weights)
+
+        # If is moving
+        if not math.isclose(math.hypot(direction[0], direction[1]), 0.0, rel_tol=0.1, abs_tol=0.1):
+            # Normalize direction
+            norm = np.linalg.norm(direction, ord=2)
+            direction = (direction[0] / norm, direction[1] / norm)
+
+            # If inside, leaving: leaving
+            # If inside, not leaving: inside
+            # If outside, leaving: outside
+            # If outside, not leaving, intersects: entering
+            # If outside, not leaving, not intersects: outside
+
+            # Check if the direction is leaving the inner box
+            is_leaving = False
+            if p_center[0] < top_inner and direction[0] < 0:
+                is_leaving = True
+            elif p_center[0] > bottom_inner and direction[0] > 0:
+                is_leaving = True
+            elif p_center[1] < left_inner and direction[1] < 0:
+                is_leaving = True
+            elif p_center[1] > right_inner and direction[1] > 0:
+                is_leaving = True
+
+            if is_inside and is_leaving:
+                p_leaving[p_id] = p_box
+                continue
+            elif is_inside and not is_leaving:
+                p_inside[p_id] = p_box
+                continue
+            elif not is_inside and is_leaving:
+                p_outside[p_id] = p_box
+                continue
+
+            # Check the line intersects the exact box
+            intersects = False
+            # Formula of the line: Ax + By + C = 0, x is [0], y is [1]
+            # Line: (x1, y1) to (x2, y2)
+            x1 = p_center[0]
+            y1 = p_center[1]
+            x2 = x1 + direction[0]
+            y2 = y1 + direction[1]
+            a = y2 - y1
+            b = x1 - x2
+            c = x2 * y1 - x1 * y2
+
+            total_positive = 0
+            for box_point in [(top, left), (top, right), (bottom, left), (bottom, right)]:
+                d = a * box_point[0] + b * box_point[1] + c
+                if math.isclose(d, 0.0, rel_tol=0.0001, abs_tol=0.0001):
+                    intersects = True
+                    break
+                elif d > -0.0001:
+                    total_positive += 1
+            if 4 > total_positive > 0:
+                intersects = True
+
+            if not is_inside and not is_leaving and intersects:
+                p_entering[p_id] = p_box
+                continue
+            elif not is_inside and not is_leaving and not intersects:
+                p_outside[p_id] = p_box
+        else:
+            if is_inside:
+                p_inside[p_id] = p_box
+            else:
+                p_outside[p_id] = p_box
+
     return p_outside, p_inside, p_entering, p_leaving

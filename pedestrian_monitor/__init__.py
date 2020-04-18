@@ -15,7 +15,7 @@ from .draw_utils import resize_image, mark_selection, mark_pedestrians, mark_tra
 from .file_handlers import get_image_paths, ImageFileIterator
 from .mouse_handlers import mouse_callback_factory
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 
 def main():
@@ -142,25 +142,31 @@ def main():
     first_frame = True
     image = np.zeros((576, 768, 3), np.uint8)
     image_path = ''
-    image_index = 0
+    image_index = -1
 
     max_records = 20  # Max number of records
 
     image_records = []
 
+    features = np.array([], np.uint8)
     feature_records = []
     feature_frame_deltas = []
     preprocessor_storage = {}
 
+    detections = []
     detection_records = []
     detection_frame_deltas = []
     detector_storage = {}
 
+    pedestrians = {}
     pedestrian_records = []
     pedestrian_frame_deltas = []
     tracks = {}
     tracker_storage = {}
 
+    groups = {}
+    entering_members = {}
+    leaving_members = {}
     group_records = []
     group_frame_deltas = []
     clusterer_storage = {}
@@ -175,116 +181,145 @@ def main():
                 frame_deltas = frame_deltas[:max_records]
         return records, frame_deltas
 
-    if frame_skipping:
-        # TODO: Multi-processing non-blocking player with frame dropping
-        # TODO: init pools and managers
-        pass
     cv.imshow(window_name, loading())
     cv.waitKey(1)
     while cv.getWindowProperty(window_name, cv.WND_PROP_VISIBLE) > 0:
         frame_start_time = time.perf_counter()
         if not paused:
+            last_image_index = image_index
             image, image_path, image_index = next(iterator, (image, image_path, image_index))
+            if image_index <= last_image_index:
+                paused = True
         if first_frame:
-            first_frame = False
             if width <= 0:
                 width = image.shape[1]
             if height <= 0:
                 height = image.shape[0]
-            # Pause at first frame
-            paused = True
         image = resize_image(image, width, height, preserve_width, preserve_height)
         image_records, _ = store_record(image.copy(), 1, image_records, None)
 
         overlay = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
         overlay_mask = np.zeros((image.shape[0], image.shape[1]), np.uint8)
-        frame_delta = 1  # TODO: it will be > 1 or 0 if frame skipping is enabled.
+        if not paused:
+            frame_delta = 1  # This will always be 1 as the spec asks us to calculate every frame
+        else:
+            frame_delta = 0
 
-        features = preprocessor_compute(
-            image=image,
-            image_index=image_index,
-            frame_delta=frame_delta,
-            image_records=image_records,
-            previous_feature_records=feature_records,
-            previous_feature_frame_deltas=feature_frame_deltas,
-            storage=preprocessor_storage,
-        )
-        feature_records, feature_frame_deltas = store_record(
-            copy.deepcopy(features), frame_delta, feature_records, feature_frame_deltas
-        )
-
-        if not args.no_detector:
-            detections = detector_compute(
-                features=features,
-                feature_records=feature_records,
-                feature_frame_deltas=feature_frame_deltas,
+        preprocessor_start_time = time.perf_counter()
+        if frame_delta > 0:
+            features = preprocessor_compute(
                 image=image,
                 image_index=image_index,
-                image_records=image_records,
                 frame_delta=frame_delta,
-                previous_detection_records=detection_records,
-                previous_detection_frame_deltas=detection_frame_deltas,
-                storage=detector_storage,
-            )
-        else:
-            detections = {}
-        detection_records, detection_frame_deltas = store_record(
-            copy.deepcopy(detections), frame_delta, detection_records, detection_frame_deltas
-        )
-
-        if not args.no_tracker:
-            pedestrians, tracks = tracker_compute(
-                detections=detections,
-                detection_records=detection_records,
-                detection_frame_deltas=detection_frame_deltas,
-                image=image,
-                image_index=image_index,
                 image_records=image_records,
-                frame_delta=frame_delta,
-                previous_pedestrian_records=pedestrian_records,
-                previous_pedestrian_frame_deltas=pedestrian_frame_deltas,
-                previous_tracks=tracks,
-                storage=tracker_storage,
+                previous_feature_records=feature_records,
+                previous_feature_frame_deltas=feature_frame_deltas,
+                storage=preprocessor_storage,
             )
-        else:
-            pedestrians = {}
-            tracks = {}
-        pedestrian_records, pedestrian_frame_deltas = store_record(
-            copy.deepcopy(pedestrians), frame_delta, pedestrian_records, pedestrian_frame_deltas
-        )
+            feature_records, feature_frame_deltas = store_record(
+                copy.deepcopy(features), frame_delta, feature_records, feature_frame_deltas
+            )
+        preprocessor_end_time = time.perf_counter()
 
-        if not args.no_clusterer:
-            groups, entering_members, leaving_members = clusterer_compute(
+        detector_start_time = time.perf_counter()
+        if frame_delta > 0:
+            if not args.no_detector:
+                detections = detector_compute(
+                    features=features,
+                    feature_records=feature_records,
+                    feature_frame_deltas=feature_frame_deltas,
+                    image=image,
+                    image_index=image_index,
+                    image_records=image_records,
+                    frame_delta=frame_delta,
+                    previous_detection_records=detection_records,
+                    previous_detection_frame_deltas=detection_frame_deltas,
+                    storage=detector_storage,
+                )
+            else:
+                detections = {}
+            detection_records, detection_frame_deltas = store_record(
+                copy.deepcopy(detections), frame_delta, detection_records, detection_frame_deltas
+            )
+        detector_end_time = time.perf_counter()
+
+        tracker_start_time = time.perf_counter()
+        if frame_delta > 0:
+            if not args.no_tracker:
+                pedestrians, tracks = tracker_compute(
+                    detections=detections,
+                    detection_records=detection_records,
+                    detection_frame_deltas=detection_frame_deltas,
+                    image=image,
+                    image_index=image_index,
+                    image_records=image_records,
+                    frame_delta=frame_delta,
+                    previous_pedestrian_records=pedestrian_records,
+                    previous_pedestrian_frame_deltas=pedestrian_frame_deltas,
+                    previous_tracks=copy.deepcopy(tracks),
+                    storage=tracker_storage,
+                )
+            else:
+                pedestrians = {}
+                tracks = {}
+            pedestrian_records, pedestrian_frame_deltas = store_record(
+                copy.deepcopy(pedestrians), frame_delta, pedestrian_records, pedestrian_frame_deltas
+            )
+        tracker_end_time = time.perf_counter()
+
+        clusterer_start_time = time.perf_counter()
+        if frame_delta > 0:
+            if not args.no_clusterer:
+                groups, entering_members, leaving_members = clusterer_compute(
+                    pedestrians=pedestrians,
+                    pedestrian_records=pedestrian_records,
+                    pedestrian_frame_deltas=pedestrian_frame_deltas,
+                    tracks=tracks,
+                    image=image,
+                    image_index=image_index,
+                    image_records=image_records,
+                    frame_delta=frame_delta,
+                    previous_group_records=group_records,
+                    previous_group_frame_deltas=group_frame_deltas,
+                    storage=clusterer_storage,
+                )
+            else:
+                groups = {}
+                entering_members = {}
+                leaving_members = {}
+            group_records, group_frame_deltas = store_record(
+                copy.deepcopy(groups), frame_delta, group_records, group_frame_deltas
+            )
+        clusterer_end_time = time.perf_counter()
+
+        if overlay_mode == 2:
+            p_outside, p_inside, p_entering, p_leaving = apply_selection(
                 pedestrians=pedestrians,
                 pedestrian_records=pedestrian_records,
                 pedestrian_frame_deltas=pedestrian_frame_deltas,
                 tracks=tracks,
-                image=image,
-                image_index=image_index,
-                image_records=image_records,
-                frame_delta=frame_delta,
-                previous_group_records=group_records,
-                previous_group_frame_deltas=group_frame_deltas,
-                storage=clusterer_storage,
-            )
-        else:
-            groups = {}
-            entering_members = {}
-            leaving_members = {}
-        group_records, group_frame_deltas = store_record(
-            copy.deepcopy(groups), frame_delta, group_records, group_frame_deltas
-        )
-
-        if overlay_mode == 2:
-            p_outside, p_inside, p_entering, p_leaving = apply_selection(
-                pedestrians, tracks, selection_top_left, selection_bottom_right
+                top_left=selection_top_left,
+                bottom_right=selection_bottom_right,
+                image_height=height,
+                image_width=width,
             )
         else:
             p_outside = pedestrians
             p_inside = {}
             p_entering = {}
             p_leaving = {}
-        overlay, overlay_mask = mark_selection(overlay, overlay_mask, selection_top_left, selection_bottom_right)
+
+        overlay_begin_time = time.perf_counter()
+        overlay, overlay_mask = mark_selection(
+            overlay=overlay,
+            mask=overlay_mask,
+            top_left=selection_top_left,
+            bottom_right=selection_bottom_right,
+            overlay_mode=overlay_mode,
+            total_inside=len(list(p_inside.keys())) + len(list(p_leaving.keys())),
+            total_leaving=len(list(p_leaving.keys())),
+            total_entering=len(list(p_entering.keys())),
+        )
         overlay, overlay_mask = mark_pedestrians(overlay, overlay_mask, p_outside, p_inside, p_entering, p_leaving)
         overlay, overlay_mask = mark_tracks(overlay, overlay_mask, tracks, pedestrians)
 
@@ -303,7 +338,8 @@ def main():
         # Uncomment the line below to visualise the features
         # image = features
 
-        image_merged = merge_overlay(image, overlay, overlay_mask, overlay_mode)
+        image_merged = merge_overlay(image, image_index, overlay, overlay_mask, overlay_mode)
+        overlay_end_time = time.perf_counter()
 
         cv.imshow(window_name, image_merged)
         keyboard_key = cv.waitKey(1) & 0xFF
@@ -321,5 +357,28 @@ def main():
             overlay_mode = 3
         frame_end_time = time.perf_counter()
         if frame_end_time - frame_start_time > 0:
+            if args.measure_time and not paused:
+                print(
+                    'Total: '
+                    + str(round((frame_end_time - frame_start_time) * 1000, 1)).rjust(6, ' ')
+                    + ' ms,  preprocessor: '
+                    + str(round((preprocessor_end_time - preprocessor_start_time) * 1000, 1)).rjust(6, ' ')
+                    + ' ms,  detector: '
+                    + str(round((detector_end_time - detector_start_time) * 1000, 1)).rjust(6, ' ')
+                    + ' ms,  tracker: '
+                    + str(round((tracker_end_time - tracker_start_time) * 1000, 1)).rjust(6, ' ')
+                    + ' ms,  clusterer: '
+                    + str(round((clusterer_end_time - clusterer_start_time) * 1000, 1)).rjust(6, ' ')
+                    + ' ms,  overlay: '
+                    + str(round((overlay_end_time - overlay_begin_time) * 1000, 1)).rjust(4, ' ')
+                    + ' ms,  imshow: '
+                    + str(round((frame_end_time - overlay_end_time) * 1000, 1)).rjust(4, ' ')
+                    + ' ms'
+                )
+            frame_end_time = time.perf_counter()  # Fetch again as there might be a small time consumption for print
+            # Delay if the total time consumption is less than the minimal frame gap
             time.sleep(max(0.0, frame_duration - frame_end_time + frame_start_time))
+        if first_frame:
+            first_frame = False
+            paused = True
     cv.destroyAllWindows()
