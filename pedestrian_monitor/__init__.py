@@ -196,7 +196,8 @@ def main():
             if height <= 0:
                 height = image.shape[0]
         image = resize_image(image, width, height, preserve_width, preserve_height)
-        image_records, _ = store_record(image.copy(), 1, image_records, None)
+        if not paused:
+            image_records, _ = store_record(image.copy(), 1, image_records, None)
 
         overlay = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
         overlay_mask = np.zeros((image.shape[0], image.shape[1]), np.uint8)
