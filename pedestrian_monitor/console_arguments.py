@@ -129,6 +129,13 @@ def get_args():
         dest='no_clusterer',
         action='store_true',
     )
+    parser.add_argument(
+        '-time',
+        '--measure-time',
+        help='Measure and print the time consumption of each step',
+        dest='measure_time',
+        action='store_true',
+    )
     # if len(sys.argv) == 1:
     #     parser.print_help(sys.stderr)
     #     sys.exit(1)

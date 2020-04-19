@@ -90,5 +90,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+##### Project #####
 pedestrian_monitor/detectors/yolov3.weights
 pedestrian_monitor.egg-info/**
+*.log
