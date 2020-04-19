@@ -96,6 +96,8 @@ python3 pedestrian_monitor -dt yolo_detector -tk mot_tracker -pp background_subt
 
 #### Detection
 
+Reference: https://github.com/Cartucho/mAP
+
 ##### Generating bounding box txt files
 run *write_bb_to_file.py* to output bounding boxes as txt files to detection_results folder
 modify line:
