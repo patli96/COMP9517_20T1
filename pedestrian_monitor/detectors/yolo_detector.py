@@ -77,7 +77,11 @@ def compute(  # This function will be called with named parameters, so please do
     height, width, channels = features.shape
     # TODO, abstract the resize factor, right now it is 0.5
     blob = cv2.dnn.blobFromImage(
+<<<<<<< HEAD
         features, 1/255, (416, 416), (0, 0, 0), True, crop=False)
+=======
+        features, 1/255, (round(768/2), round(576/2)), (0, 0, 0), True, crop=False)
+>>>>>>> origin/alex_experimentation
     net.setInput(blob)
     detections = net.forward(output_layers)
 

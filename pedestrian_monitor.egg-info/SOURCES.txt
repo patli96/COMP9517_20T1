@@ -15,6 +15,7 @@ pedestrian_monitor.egg-info/top_level.txt
 pedestrian_monitor/clusterers/__init__.py
 pedestrian_monitor/clusterers/path_distance_agglomerative.py
 pedestrian_monitor/clusterers/sample_clusterer.py
+pedestrian_monitor/clusterers/trajectory_agglomerative.py
 pedestrian_monitor/detectors/__init__.py
 pedestrian_monitor/detectors/gt_detector.py
 pedestrian_monitor/detectors/sample_detector.py
