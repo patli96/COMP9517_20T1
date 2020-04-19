@@ -12,10 +12,10 @@ def detect(raw, conf_threshold=0.3, img_background=[]):
     img = cv2.imread(raw)
 
     # Background removal
-    sub = np.subtract(img, img_background)
-    sub = (sub - sub.min()) / (sub.max() - sub.min()) * 255
-    sub = np.float32(sub.reshape(img.shape))
-    img = sub
+    # sub = np.subtract(img, img_background)
+    # sub = (sub - sub.min()) / (sub.max() - sub.min()) * 255
+    # sub = np.float32(sub.reshape(img.shape))
+    # img = sub
 
     height, width, channels = img.shape
 
