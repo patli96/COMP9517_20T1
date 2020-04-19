@@ -91,3 +91,4 @@ $RECYCLE.BIN/
 *.lnk
 
 pedestrian_monitor/detectors/yolov3.weights
+pedestrian_monitor.egg-info/**

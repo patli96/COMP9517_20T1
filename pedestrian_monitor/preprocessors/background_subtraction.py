@@ -27,4 +27,4 @@ def compute(  # This function will be called with named parameters, so please do
 
     sub = np.subtract(image, storage['imgs_modes'])
     sub = (sub - sub.min()) / (sub.max() - sub.min()) * 255
-    return sub.reshape(image.shape)
+    return np.float32(sub.reshape(image.shape))

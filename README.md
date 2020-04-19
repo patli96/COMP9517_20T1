@@ -90,3 +90,23 @@ and place the file under /pedestrian_monitor/detectors/
    ```
    
    Please note that some arguments are not implemented yet.
+python3 pedestrian_monitor -dt yolo_detector -tk mot_tracker -pp background_subtraction
+
+### Running code
+
+#### Detection
+
+##### Generating bounding box txt files
+run *write_bb_to_file.py* to output bounding boxes as txt files to detection_results folder
+modify line:
+```
+generate_bounding_boxes_file(
+   'yolo', # folder name
+   0.3, # confidence level
+   imgs_modes # image background, if applying image preprocessing
+)
+```
+##### run evaluation against ground_truth
+* Place the detection txt files in */mAP/input/detection-results*
+* run python3 main.js
+* result will be produced in */mAP/output* folder
