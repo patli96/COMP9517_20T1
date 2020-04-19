@@ -6,9 +6,9 @@ from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import OPTICS, AgglomerativeClustering
 
-plt.ion()
-fig = plt.figure()
-ax = fig.add_subplot(111)
+# plt.ion()
+# fig = plt.figure()
+# ax = fig.add_subplot(111)
 
 def compute(  # This function will be called with named parameters, so please do not change the parameter name
         pedestrians: Dict[int, Tuple[int, int, int, int]],  # Dict{ pedestrian_id: (y1, x1, y2, x2), ... }
@@ -26,6 +26,10 @@ def compute(  # This function will be called with named parameters, so please do
         previous_group_frame_deltas: List[int],  # List[ frame_delta ], for previously computed groups
         storage: Dict[str, Any],  # It will be handed over to the next detector, please mutate this object directly
 ) -> Tuple[Dict[int, List[int]], Dict[int, List[int]], Dict[int, List[int]]]:
+
+    counter = 0
+    if 'group_counter' in storage:
+        counter = storage['group_counter']
 
     points_for_avg = 3
     X = []
@@ -45,11 +49,11 @@ def compute(  # This function will be called with named parameters, so please do
             first_avg = np.mean(first_half, axis=0)
             second_avg = np.mean(second_half, axis=0)
 
-            x = track_norm[points_for_avg][1] * 2
-            y = track_norm[points_for_avg][0] * 2
+            x = track_norm[points_for_avg][1]
+            y = track_norm[points_for_avg][0]
             mag = math.sqrt((first_avg[0] - second_avg[0])**2 + (first_avg[1] - second_avg[1])**2)
             angle = math.atan2(first_avg[0] - second_avg[0], first_avg[1] - second_avg[1]) / math.pi
-            X.append([x, y, mag, angle])
+            X.append([x, y, mag, mag * angle])
 
     X = np.array(X)
 
@@ -57,27 +61,32 @@ def compute(  # This function will be called with named parameters, so please do
         return {}, {}, {}
 
     # db = OPTICS(min_samples=1, max_eps=0.000001, algorithm='brute', cluster_method='dbscan').fit(X)
-    db = AgglomerativeClustering(distance_threshold=0.2, compute_full_tree=True, n_clusters=None).fit(X)
+    db = AgglomerativeClustering(distance_threshold=0.05, compute_full_tree=True, n_clusters=None).fit(X)
 
-    ax.clear()
-    ax.set_xlim(0.0, 1.0)
-    ax.set_ylim(0.0, 1.0)
-    ax.scatter(X[:, 0], X[:, 1], c=db.labels_)
+    # ax.clear()
+    # ax.set_xlim(0.0, 1.0)
+    # ax.set_ylim(0.0, 1.0)
+    # ax.scatter(X[:, 0], X[:, 1], c=db.labels_)
 
-    groups = {}
+    clusters = {}
     for idx, cl in enumerate(db.labels_):
-        if cl in groups:
-            groups[cl].append(pedestrian_ids[idx])
+        if cl in clusters:
+            clusters[cl].append(pedestrian_ids[idx])
         else:
-            groups[cl] = [pedestrian_ids[idx]]
+            clusters[cl] = [pedestrian_ids[idx]]
 
-    single_groups = []
-    for g in groups:
-        if len(groups[g]) < 2:
-            single_groups.append(g)
+    single_clusters = []
+    for g in clusters:
+        if len(clusters[g]) < 2:
+            single_clusters.append(g)
 
-    for g in single_groups:
-        del groups[g]
+    for g in single_clusters:
+        del clusters[g]
+
+
+    for g, ps in previous_group_records[0].items():
+
+
 
     # if len(groups.items()) > 0:
     #     print(groups)

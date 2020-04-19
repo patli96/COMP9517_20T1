@@ -26,7 +26,7 @@ def _draw_text(text, pos, color, overlay, mask):
         fontFace=cv.FONT_HERSHEY_PLAIN,
         fontScale=1.0,
         color=color,
-        thickness=1,
+        thickness=2,
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )
@@ -37,7 +37,7 @@ def _draw_text(text, pos, color, overlay, mask):
         fontFace=cv.FONT_HERSHEY_PLAIN,
         fontScale=1.0,
         color=255,
-        thickness=1,
+        thickness=2,
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )
@@ -51,7 +51,7 @@ def _draw_box(text, box, color, overlay, mask):
         (box[1], box[0]),
         (box[3], box[2]),
         color=color,
-        thickness=1,
+        thickness=2,
         lineType=cv.LINE_AA,
         shift=0,
     )
@@ -60,7 +60,7 @@ def _draw_box(text, box, color, overlay, mask):
         (box[1], box[0]),
         (box[3], box[2]),
         color=255,
-        thickness=1,
+        thickness=2,
         lineType=cv.LINE_AA,
         shift=0,
     )
@@ -76,7 +76,7 @@ def loading():
         fontFace=cv.FONT_HERSHEY_PLAIN,
         fontScale=1.0,
         color=255,
-        thickness=1,
+        thickness=2,
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )
@@ -135,7 +135,7 @@ def mark_pedestrians(
             boxes,
             True,
             color=color,
-            thickness=1,
+            thickness=2,
             lineType=cv.LINE_AA,
             shift=0,
         )
@@ -144,7 +144,7 @@ def mark_pedestrians(
             boxes,
             True,
             color=255,
-            thickness=1,
+            thickness=2,
             lineType=cv.LINE_AA,
             shift=0,
         )
@@ -171,7 +171,7 @@ def mark_tracks(
                 [points],
                 False,
                 color=color_track,
-                thickness=1,
+                thickness=2,
                 lineType=cv.LINE_AA,
                 shift=0,
             )
@@ -180,7 +180,7 @@ def mark_tracks(
                 [points],
                 False,
                 color=255,
-                thickness=1,
+                thickness=2,
                 lineType=cv.LINE_AA,
                 shift=0,
             )
@@ -306,7 +306,7 @@ def append_image_status_text(image:np.ndarray, status_text:str):
         fontFace=cv.FONT_HERSHEY_PLAIN,
         fontScale=1.0,
         color=(0, 0, 0),
-        thickness=1,
+        thickness=2,
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )

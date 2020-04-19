@@ -26,6 +26,8 @@ joblib = "^0.14.1"
 keras = "^2.3.1"
 natsort = "^7.0.1"
 pyqt5 = "^5.14.2"
+numba = "^0.49.0"
+filterpy = "^1.4.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

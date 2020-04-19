@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from skimage import io
 from sklearn.utils.linear_assignment_ import linear_assignment
+# from scipy.optimize import linear_sum_assignment as linear_assignment
 import glob
 import time
 import argparse
@@ -245,5 +246,3 @@ def parse_args():
                         action='store_true')
     args = parser.parse_args()
     return args
-
-

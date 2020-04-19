@@ -74,10 +74,10 @@ def compute(  # This function will be called with named parameters, so please do
     # each value is the bounding box of a pedestrian, and the format is (y1, x1, y2, x2)
     # please be aware that it is height-first, shape-like order instead of OpenCV's width-first order
 
-    height, width, channels = image.shape
+    height, width, channels = features.shape
     # TODO, abstract the resize factor, right now it is 0.5
     blob = cv2.dnn.blobFromImage(
-        image, 1/255, (round(768/2), round(576/2)), (0, 0, 0), True, crop=False)
+        features, 1/255, (round(768/2), round(576/2)), (0, 0, 0), True, crop=False)
     net.setInput(blob)
     detections = net.forward(output_layers)
 
