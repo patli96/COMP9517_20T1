@@ -34,4 +34,4 @@ def generate_bounding_boxes_file(folder_name, conf_thres, image_mod):
             print(line)
             f.write(line)
 
-generate_bounding_boxes_file('yolo', 0.3, imgs_modes)
+generate_bounding_boxes_file('yolo_0.25_br', 0.25, imgs_modes)
