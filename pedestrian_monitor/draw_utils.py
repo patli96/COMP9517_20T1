@@ -324,7 +324,14 @@ def resize_image(
     return image
 
 
-def merge_overlay(image: np.ndarray, image_index: int, overlay_image: np.ndarray, overlay_mask: np.ndarray, overlay_mode: int):
+def merge_overlay(
+        image: np.ndarray,
+        image_index: int,
+        overlay_image: np.ndarray,
+        overlay_mask: np.ndarray,
+        overlay_mode: int,
+        other_info: str,
+):
     image_combined = image.copy()
 
     if overlay_mode > 0:
@@ -340,22 +347,22 @@ def merge_overlay(image: np.ndarray, image_index: int, overlay_image: np.ndarray
     if overlay_mode == 0:
         image_combined = append_image_status_text(
             image_combined,
-            '[Frame: ' + str(image_index) + '][OverlayMode 0] All overlays are hidden.',
+            '[Frame: ' + str(image_index) + ']' + other_info + '[OverlayMode 0] All overlays are hidden.',
         )
     elif overlay_mode == 1:
         image_combined = append_image_status_text(
             image_combined,
-            '[Frame: ' + str(image_index) + '][OverlayMode 1] Show overlays for Task 1.',
+            '[Frame: ' + str(image_index) + ']' + other_info + '[OverlayMode 1] Show overlays for Task 1.',
         )
     elif overlay_mode == 2:
         image_combined = append_image_status_text(
             image_combined,
-            '[Frame: ' + str(image_index) + '][OverlayMode 2] Show overlays for Task 2.',
+            '[Frame: ' + str(image_index) + ']' + other_info + '[OverlayMode 2] Show overlays for Task 2.',
         )
     elif overlay_mode == 3:
         image_combined = append_image_status_text(
             image_combined,
-            '[Frame: ' + str(image_index) + '][OverlayMode 3] Show overlays for Task 3.',
+            '[Frame: ' + str(image_index) + ']' + other_info + '[OverlayMode 3] Show overlays for Task 3.',
         )
     return image_combined
 

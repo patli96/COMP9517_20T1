@@ -321,8 +321,8 @@ def main():
             total_leaving=len(list(p_leaving.keys())),
             total_entering=len(list(p_entering.keys())),
         )
-        overlay, overlay_mask = mark_pedestrians(overlay, overlay_mask, p_outside, p_inside, p_entering, p_leaving)
         overlay, overlay_mask = mark_tracks(overlay, overlay_mask, tracks, pedestrians)
+        overlay, overlay_mask = mark_pedestrians(overlay, overlay_mask, p_outside, p_inside, p_entering, p_leaving)
 
         if overlay_mode == 3:
             overlay, overlay_mask = mark_groups(
@@ -339,7 +339,14 @@ def main():
         # Uncomment the line below to visualise the features
         # image = features
 
-        image_merged = merge_overlay(image, image_index, overlay, overlay_mask, overlay_mode)
+        image_merged = merge_overlay(
+            image,
+            image_index,
+            overlay,
+            overlay_mask,
+            overlay_mode,
+            '[Pedestrians: ' + str(len(list(pedestrians.keys()))) + ']'
+        )
         overlay_end_time = time.perf_counter()
 
         cv.imshow(window_name, image_merged)
