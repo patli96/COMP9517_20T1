@@ -63,7 +63,7 @@ def compute(  # This function will be called with named parameters, so please do
     for g in groups:
         if len(groups[g]) < 2:
             single_groups.append(g)
-            
+
     for g in single_groups:
         del groups[g]
 

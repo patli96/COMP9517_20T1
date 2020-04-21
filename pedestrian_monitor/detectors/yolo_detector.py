@@ -102,4 +102,4 @@ def compute(  # This function will be called with named parameters, so please do
                 y2 = y1 + rect_height
                 rects.append((y1, x1, y2, x2, confidence))
     filtered_rects = nms(rects, 0.5)
-    return filtered_rects
+    return filtered_rects.astype(np.uint).tolist()

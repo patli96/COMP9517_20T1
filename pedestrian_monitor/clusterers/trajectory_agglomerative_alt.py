@@ -53,7 +53,7 @@ def compute(  # This function will be called with named parameters, so please do
             y = track_norm[points_for_avg][0]
             mag = math.sqrt((first_avg[0] - second_avg[0])**2 + (first_avg[1] - second_avg[1])**2)
             angle = math.atan2(first_avg[0] - second_avg[0], first_avg[1] - second_avg[1]) / math.pi
-            X.append([x, y, mag, mag * angle])
+            X.append([x, y, mag, mag * angle * 4])
 
     X = np.array(X)
 
@@ -83,10 +83,9 @@ def compute(  # This function will be called with named parameters, so please do
     for g in single_clusters:
         del clusters[g]
 
-
-    for g, ps in previous_group_records[0].items():
-
-
+    groups = {}
+    for cl, ps in clusters.items():
+        groups[int(''.join([str(p) for p in ps]))] = ps
 
     # if len(groups.items()) > 0:
     #     print(groups)
