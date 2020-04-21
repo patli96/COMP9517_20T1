@@ -1,20 +1,3 @@
-"""
-    SORT: A Simple, Online and Realtime Tracker
-    Copyright (C) 2016 Alex Bewley alex@dynamicdetection.com
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""
 from __future__ import print_function
 
 from numba import jit
@@ -237,12 +220,3 @@ class Sort(object):
         if len(ret) > 0:
             return np.concatenate(ret)
         return np.empty((0, 5))
-
-
-def parse_args():
-    """Parse input arguments."""
-    parser = argparse.ArgumentParser(description='SORT demo')
-    parser.add_argument('--display', dest='display', help='Display online tracker output (slow) [False]',
-                        action='store_true')
-    args = parser.parse_args()
-    return args
