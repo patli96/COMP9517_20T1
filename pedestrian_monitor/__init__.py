@@ -311,19 +311,8 @@ def main():
             p_leaving = {}
 
         overlay_begin_time = time.perf_counter()
-        overlay, overlay_mask = mark_selection(
-            overlay=overlay,
-            mask=overlay_mask,
-            top_left=selection_top_left,
-            bottom_right=selection_bottom_right,
-            overlay_mode=overlay_mode,
-            total_inside=len(list(p_inside.keys())) + len(list(p_leaving.keys())),
-            total_leaving=len(list(p_leaving.keys())),
-            total_entering=len(list(p_entering.keys())),
-        )
         overlay, overlay_mask = mark_tracks(overlay, overlay_mask, tracks, pedestrians)
         overlay, overlay_mask = mark_pedestrians(overlay, overlay_mask, p_outside, p_inside, p_entering, p_leaving)
-
         if overlay_mode == 3:
             overlay, overlay_mask = mark_groups(
                 overlay=overlay,
@@ -335,6 +324,16 @@ def main():
                 pedestrians=pedestrians,
                 paused=paused or image_index <= 0,
             )
+        overlay, overlay_mask = mark_selection(
+            overlay=overlay,
+            mask=overlay_mask,
+            top_left=selection_top_left,
+            bottom_right=selection_bottom_right,
+            overlay_mode=overlay_mode,
+            total_inside=len(list(p_inside.keys())) + len(list(p_leaving.keys())),
+            total_leaving=len(list(p_leaving.keys())),
+            total_entering=len(list(p_entering.keys())),
+        )
 
         # Uncomment the line below to visualise the features
         # image = features

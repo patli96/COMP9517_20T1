@@ -18,13 +18,16 @@ color_leaving_group = (185, 230, 90)  # Cyan
 
 
 def _draw_text(text, pos, color, overlay, mask):
-    label_pos = (max(18, min(overlay.shape[0] - 3, pos[0])), max(0, min(overlay.shape[1] - 30, pos[1])))
+    label_pos = (
+        max(22, min(overlay.shape[0] - 3, pos[0])),
+        max(0, min(overlay.shape[1] - 10 * len(text) - 11, pos[1]))
+    )
     overlay = cv.putText(
         overlay,
         text,
         (label_pos[1], label_pos[0] - 3),
         fontFace=cv.FONT_HERSHEY_PLAIN,
-        fontScale=1.0,
+        fontScale=1.3,
         color=color,
         thickness=2,
         lineType=cv.LINE_AA,
@@ -35,7 +38,7 @@ def _draw_text(text, pos, color, overlay, mask):
         text,
         (label_pos[1], label_pos[0] - 3),
         fontFace=cv.FONT_HERSHEY_PLAIN,
-        fontScale=1.0,
+        fontScale=1.3,
         color=255,
         thickness=2,
         lineType=cv.LINE_AA,
@@ -76,7 +79,7 @@ def loading():
         fontFace=cv.FONT_HERSHEY_PLAIN,
         fontScale=1.0,
         color=255,
-        thickness=2,
+        thickness=1,
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )
@@ -306,7 +309,7 @@ def append_image_status_text(image:np.ndarray, status_text:str):
         fontFace=cv.FONT_HERSHEY_PLAIN,
         fontScale=1.0,
         color=(0, 0, 0),
-        thickness=2,
+        thickness=1,
         lineType=cv.LINE_AA,
         bottomLeftOrigin=False,
     )
