@@ -8,7 +8,7 @@ from ..console_arguments import get_args
 import numpy as np
 import http.client
 
-MIN_CONFIDENCE = 0.2
+MIN_CONFIDENCE = 0.5
 
 CSP_SERVER_PORT = 8097
 TIMEOUT_SECONDS = 600
