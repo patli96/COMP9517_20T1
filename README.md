@@ -2,9 +2,6 @@
 Project page on course website:
 https://webcms3.cse.unsw.edu.au/COMP9517/20T1/resources/41481
 
-## Overview
-TBD
-
 ---
 
 University of New South Wales - Term 1, 2020  
@@ -28,6 +25,24 @@ Slack: https://2020visionco.slack.com/
 ### Preparation
 * Download the YOLOv3 weight here: https://pjreddie.com/media/files/yolov3.weights
 and place the file under /pedestrian_monitor/detectors/
+* To run the CSP detector, you need to setup the CSP environment.
+   * Git clone https://github.com/dominikandreas/CSP
+   * Create a separate Python Virtual Environment
+   * Install requirements.txt inside, for instructions of installing Tensorflow-gpu, see below.
+   * Make sure you have installed CUDA 10.0 and related CuDNN.
+   * Install Cython, matplotlib, bottle using pip
+   * Put `CSP_utils/pred_server.py` and `CSP_utils/setup_win.py` inside
+   * Windows guide:
+       * install Visual Studio 2017, not 2019. If you have Visual Studio 2019, you need to uninstall it.
+       * in `setup_win.py`, change the VC path inside the file to your path
+       * in `setup_win.py`, change Line 52 gpu_nms.cpp to gpu_nms.pyx
+       * in `keras_csp/nms/cpu_nms.pyx` and `gpu_nms.pyx`, line 25, change `np.int_t` to `np.intp_t`
+       * run: python setup_win.py install
+       * in generated `gpu_nms.cpp` , change Line 2166 `__pyx_t_5numpy_int32_t` to `int`
+       * in `setup_win.py` , change `gpu_nms.pyx` to `gpu_nms.cpp` to avoid re-generation
+       * run: `python setup_win.py install`, it should compile successfully
+       * run: `python setup_win.py build_ext --inplace`
+       * then you can finally run `python pred_server.py`.
 
 ### Running code
 
@@ -83,23 +98,28 @@ and place the file under /pedestrian_monitor/detectors/
    python -m pedestrian_monitor
    ```
    
+   To specify preprocessor, detector, tracker or/and clusterer:
+   
+   ```bash
+   python pedestrian_monitor --preprocessor background_subtraction --detector csp_detector --tracker mot_tracker --clusterer trajectory_agglomerative_track
+   ```
+   
    To display the help information, you may run:
    
    ```bash
    python pedestrian_monitor -h
    ```
    
-   Please note that some arguments are not implemented yet.
-python3 pedestrian_monitor -dt yolo_detector -tk mot_tracker -pp background_subtraction
+   Please note that some arguments (i.e. fps) are not implemented yet.
 
-### Running code
+### Evaluations
 
-#### Detection
+#### Detectors
 
 Reference: https://github.com/Cartucho/mAP
 
 ##### Generating bounding box txt files
-run *write_bb_to_file.py* to output bounding boxes as txt files to detection_results folder
+run `write_bb_to_file.py` to output bounding boxes as txt files to detection_results folder
 modify line:
 ```
 generate_bounding_boxes_file(
@@ -109,6 +129,10 @@ generate_bounding_boxes_file(
 )
 ```
 ##### run evaluation against ground_truth
-* Place the detection txt files in */mAP/input/detection-results*
-* run python3 main.js
-* result will be produced in */mAP/output* folder
+* Place the detection txt files in `/mAP/input/detection-results`
+* run `python main.py`
+* result will be produced in `/mAP/output` folder
+
+#### Trackers
+
+Reference: https://github.com/cheind/py-motmetrics
