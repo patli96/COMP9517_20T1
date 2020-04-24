@@ -23,9 +23,11 @@ def compute(  # This function will be called with named parameters, so please do
 ) -> Tuple[Dict[int, Tuple[int, int, int, int]], Dict[int, List[Tuple[int, int]]]]:
     if type(detections) == dict:
         pedestrians = dict(detections)
-    else:
+    elif detections is not None:
         pedestrians = dict(zip(list(range(len(detections))), detections))
         pedestrians = dict((p_id, box) for (p_id, box) in pedestrians.items() if box is not None)
+    else:
+        return {}, {}
     if not SHOW_TRACKS:
         return pedestrians, {}
 

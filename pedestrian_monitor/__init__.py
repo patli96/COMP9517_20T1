@@ -238,7 +238,7 @@ def main():
                     storage=detector_storage,
                 )
             else:
-                detections = {}
+                detections = []
             detection_records, detection_frame_deltas = store_record(
                 copy.deepcopy(detections), frame_delta, detection_records, detection_frame_deltas
             )

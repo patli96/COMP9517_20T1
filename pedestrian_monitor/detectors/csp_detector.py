@@ -156,6 +156,9 @@ def compute(  # This function will be called with named parameters, so please do
             with open(_get_gt_file_path(), 'a') as f:
                 f.write(_to_gt_format(image_index, raw_detections))
 
+        if len(raw_detections) <= 0:  # If nothing detected
+            return []
+
         detections = list(map(tuple, np.round(raw_detections[:, [0, 1, 2, 3]]).astype(int)))
         return detections
     except (socket.timeout, OSError):
